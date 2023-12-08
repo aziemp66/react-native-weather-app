@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, Button, Alert, Image } from 'react-native';
+import { StyleSheet, TextInput, Button, Alert, } from 'react-native';
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 
@@ -10,17 +10,21 @@ export default function TabOneScreen() {
   const [currentLocation, setCurrentLocation] = useState("Palembang")
   const [isLoading, setIsLoading] = useState(false)
   const [weatherData, setWeatherData] = useState<null | GetCurrentWeather>(null)
+  const url = `http://api.weatherstack.com/current?access_key=1978b6b7f2e1aa203a1c53cf9232b335&query=${location}`
   useEffect(() => {
     onPressButton()
   }, [])
 
   const onPressButton = async () => {
-    const url = `http://api.weatherstack.com/current?access_key=${process.env.EXPO_PUBLIC_WEATHER_API_KEY}&query=${location}`
 
     try {
       setIsLoading(true)
       setCurrentLocation(location)
-      const { data, status } = await axios.get<GetCurrentWeather>(url)
+      const { data, status } = await axios.get<GetCurrentWeather>(url, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
       if (status < 400) {
         console.log(data);
 
@@ -34,11 +38,13 @@ export default function TabOneScreen() {
   }
   return (
     <View style={styles.container}>
+      <Text style={styles.info}>API URL : {url}</Text>
       <Text style={styles.title}>Current Location : {currentLocation}</Text>
       <TextInput style={styles.input} placeholder='Change Location' onChangeText={(text) => setLocation(text)} />
       <View style={styles["button-container"]}>
         <Button color={"gray"} title='Change' onPress={onPressButton} />
       </View>
+      {isLoading && <Text>Loading...</Text>}
       {weatherData && <View style={styles['weather-container']}>
 
         <Text style={styles['weather-name']}>{weatherData.location.name}</Text>
@@ -54,6 +60,9 @@ export default function TabOneScreen() {
 }
 
 const styles = StyleSheet.create({
+  info: {
+    color: 'white'
+  },
   container: {
     flex: 1,
     alignItems: 'center',
